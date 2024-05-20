@@ -1,0 +1,3 @@
+-- Instalar composer desde su web https://getcomposer.org/download/
+-- Instalar la libreria para los reportes en excel
+composer require phpoffice/phpspreadsheet
