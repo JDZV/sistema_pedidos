@@ -124,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sheet->getStyle($range)->applyFromArray($styleArray);
 
     // Nombre del archivo Excel
-    $filename = 'reporte_productos_' . date('Y-m-d_H-i-s') . '.xlsx';
+    $filename = 'reporte_productos_'.str_replace('_', ' ', $filtro_stock).'_' . date('Y-m-d_H-i-s') . '.xlsx';
 
     // Guardar el archivo Excel
     $writer = new Xlsx($spreadsheet);

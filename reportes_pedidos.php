@@ -64,6 +64,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         ],
     ];
 
+// Formatear la fecha de inicio y fin para incluirlas en el nombre del archivo
+    $fecha_inicio_formateada = date('Y-m-d', strtotime($fecha_inicio));
+    $fecha_fin_formateada = date('Y-m-d', strtotime($fecha_fin));
+
+// Formatear la hora de inicio y fin para incluirlas en el nombre del archivo
+    $hora_inicio_format = date('H:i:s', strtotime($hora_inicio));
+    $hora_fin_format = date('H:i:s', strtotime($hora_fin));
+
+
 // Aplicar el estilo de borde a las celdas de A1 a A5
     $sheet->getStyle('A1:A5')->applyFromArray($styleArray);
     // Combinar celdas para el título del reporte
@@ -76,11 +85,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Personalizar el título del reporte, el tipo de pedido y el estado (parte superior derecha)
     $sheet->setCellValue('B1', 'Reporte de Pedidos');
     $sheet->setCellValue('B2', 'Estado: ' . $estado);
+    $sheet->setCellValue('B3','Desde '.$fecha_inicio_formateada . ' ' . $hora_inicio_format . ' hasta ' . $fecha_fin_formateada . ' ' . $hora_fin_format);
 // Centrar el título del reporte, el tipo de pedido y el estado
-    $sheet->getStyle('B1:B2')->getAlignment()->setHorizontal('center');
+    $sheet->getStyle('B1:B3')->getAlignment()->setHorizontal('center');
 // Establecer el título del reporte y el estado en negrita
     $sheet->getStyle('B1')->getFont()->setBold(true); // Título del reporte
     $sheet->getStyle('B2')->getFont()->setBold(true); // Estado
+    $sheet->getStyle('B3')->getFont()->setBold(true); // Estado
     // Establecer borde para las celdas de B1 a F5
     $styleArray = [
         'borders' => [
@@ -155,9 +166,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row++;
     }
 
-// Formatear la fecha de inicio y fin para incluirlas en el nombre del archivo
-    $fecha_inicio_formateada = date('Y-m-d', strtotime($fecha_inicio));
-    $fecha_fin_formateada = date('Y-m-d', strtotime($fecha_fin));
 
 // Formatear la hora de inicio y fin para incluirlas en el nombre del archivo
     $hora_inicio_formateada = date('H-i-s', strtotime($hora_inicio));
