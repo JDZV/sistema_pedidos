@@ -13,8 +13,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $estado = $_POST['estado'];
 
+    // Obtener el estado actual del pedido antes de actualizar
+    $sql = "SELECT estado FROM pedidos WHERE id=$id";
+    $result = $conn->query($sql);
+    if ($result->num_rows != 1) {
+        header("Location: pedidos.php");
+        exit();
+    }
+    $pedido = $result->fetch_assoc();
+    $estado_actual = $pedido['estado'];
+
+    // Actualizar el estado del pedido
     $sql = "UPDATE pedidos SET estado='$estado' WHERE id=$id";
     if ($conn->query($sql) === TRUE) {
+        // Si el estado cambia a 'entregado' y no estaba entregado antes, actualizar el stock
+        if ($estado == 'entregado' && $estado_actual != 'entregado') {
+            $sql = "SELECT producto_id, cantidad FROM detalles_pedido WHERE pedido_id=$id";
+            $result = $conn->query($sql);
+            while ($detalle = $result->fetch_assoc()) {
+                $producto_id = $detalle['producto_id'];
+                $cantidad = $detalle['cantidad'];
+
+                // Actualizar el stock del producto
+                $sql_update_stock = "UPDATE productos SET stock = stock - $cantidad WHERE id = $producto_id";
+                $conn->query($sql_update_stock);
+            }
+        }
         header("Location: pedidos.php");
         exit();
     } else {

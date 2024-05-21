@@ -1,11 +1,6 @@
 <?php
 session_start();
 include 'conexion.php';
-require 'vendor/autoload.php'; // Asegúrate de que esta ruta sea la correcta
-
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing as PhpSpreadsheetDrawing;
 
 // Verificar si el usuario es administrador o trabajador
 if (!isset($_SESSION['usuario_id']) || ($_SESSION['rol_id'] != 1 && $_SESSION['rol_id'] != 2)) {
@@ -13,265 +8,98 @@ if (!isset($_SESSION['usuario_id']) || ($_SESSION['rol_id'] != 1 && $_SESSION['r
     exit();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $fecha_inicio = $_POST['fecha_inicio'];
-    $hora_inicio = $_POST['hora_inicio'];
-    $fecha_fin = $_POST['fecha_fin'];
-    $hora_fin = $_POST['hora_fin'];
-    $estado = $_POST['estado'];
 
-    // Combina fecha y hora de inicio
-    $fecha_hora_inicio = $fecha_inicio . ' ' . $hora_inicio;
-    // Combina fecha y hora de fin
-    $fecha_hora_fin = $fecha_fin . ' ' . $hora_fin;
-
-
-    // Consulta SQL para seleccionar los pedidos dentro del rango de fechas y el estado especificados
-    $sql = "SELECT p.*, u.nombre_apellidos, 
-            GROUP_CONCAT(CONCAT(productos.nombre, ' (', detalles_pedido.cantidad, ')') SEPARATOR ', ') AS detalles, 
-            detalles_pedido.descripcion_pedido
-            FROM pedidos p 
-            JOIN usuarios u ON p.usuario_id = u.id
-            LEFT JOIN detalles_pedido ON p.id = detalles_pedido.pedido_id
-            LEFT JOIN productos ON detalles_pedido.producto_id = productos.id
-            WHERE p.date_created BETWEEN '$fecha_hora_inicio' AND '$fecha_hora_fin' 
-            AND p.estado = '$estado'
-            GROUP BY p.id";
-    $result = $conn->query($sql);
-
-// Crear un nuevo objeto Spreadsheet
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-
-// Agregar imagen al encabezado (parte superior izquierda)
-    $drawing = new PhpSpreadsheetDrawing();
-    $drawing->setName('Logo');
-    $drawing->setDescription('Logo');
-    $drawing->setPath('img/logoex.jpeg'); // Reemplazar con la ruta correcta a la imagen
-    $drawing->setCoordinates('A1');
-    $drawing->setOffsetX(3);
-    $drawing->setOffsetY(5);
-    $drawing->setHeight(100);
-    $drawing->setWidth(100);
-    $drawing->setWorksheet($sheet);
-    // Establecer borde para las celdas de A1 a A5
-    $styleArray = [
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                'color' => ['rgb' => '000000'], // Color del borde
-            ],
-        ],
-    ];
-
-// Aplicar el estilo de borde a las celdas de A1 a A5
-    $sheet->getStyle('A1:A5')->applyFromArray($styleArray);
-    // Combinar celdas para el título del reporte y el estado
-    $sheet->mergeCells('A1:A5'); // Combinar celdas desde C1 hasta F1 para el título
-
-// Personalizar el título del reporte, el tipo de pedido y el estado (parte superior derecha)
-    $sheet->setCellValue('B2', 'Reporte de Pedidos');
-    $sheet->setCellValue('B4', 'Estado: ' . $estado);
-// Centrar el título del reporte, el tipo de pedido y el estado
-    $sheet->getStyle('B2:B4')->getAlignment()->setHorizontal('center');
-
-// Establecer el título del reporte y el estado en negrita
-    $sheet->getStyle('B2')->getFont()->setBold(true); // Título del reporte
-    $sheet->getStyle('B4')->getFont()->setBold(true); // Estado
-    // Establecer borde para las celdas de A1 a A5
-    $styleArray = [
-        'borders' => [
-            'outline' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                'color' => ['rgb' => '000000'], // Color del borde
-            ],
-        ],
-    ];
-
-// Aplicar el estilo de borde a las celdas de A1 a A5
-    $sheet->getStyle('B1:B5')->applyFromArray($styleArray);
-// Encabezados de las columnas
-    $sheet->setCellValue('A6', 'ID');
-    $sheet->setCellValue('B6', 'Cliente');
-    $sheet->setCellValue('C6', 'Fecha Pedido');
-    $sheet->setCellValue('D6', 'Estado');
-    $sheet->setCellValue('E6', 'Producto y Cantidad');
-    $sheet->setCellValue('F6', 'Descripción');
-    // Establecer el título del reporte y el estado en negrita
-    $sheet->getStyle('A6')->getFont()->setBold(true); // ENCABEZADOS
-    $sheet->getStyle('B6')->getFont()->setBold(true); // ENCABEZADOS
-    $sheet->getStyle('C6')->getFont()->setBold(true); // ENCABEZADOS
-    $sheet->getStyle('D6')->getFont()->setBold(true); // ENCABEZADOS
-    $sheet->getStyle('E6')->getFont()->setBold(true); // ENCABEZADOS
-    $sheet->getStyle('F6')->getFont()->setBold(true); // ENCABEZADOS
-
-// Definir el ancho de las columnas
-    $sheet->getColumnDimension('A')->setWidth(15); // Ancho de la columna A
-    $sheet->getColumnDimension('B')->setWidth(30); // Ancho de la columna B
-    $sheet->getColumnDimension('C')->setWidth(30); // Ancho de la columna C
-    $sheet->getColumnDimension('D')->setWidth(30); // Ancho de la columna D
-    $sheet->getColumnDimension('E')->setWidth(30); // Ancho de la columna E
-    $sheet->getColumnDimension('F')->setWidth(30); // Ancho de la columna F
-
-// Obtener los datos de los pedidos y llenar la tabla
-    $row = 7; // Empezar desde la quinta fila
-    while ($pedido = $result->fetch_assoc()) {
-        $sheet->setCellValue('A' . $row, $pedido['id']);
-        $sheet->setCellValue('B' . $row, $pedido['nombre_apellidos']);
-        $sheet->setCellValue('C' . $row, $pedido['fecha_pedido']);
-        $sheet->setCellValue('D' . $row, $pedido['estado']);
-        $sheet->setCellValue('E' . $row, $pedido['detalles']);
-        $sheet->setCellValue('F' . $row, $pedido['descripcion_pedido']);
-        $row++;
-    }
-
-// Definir el rango de celdas para aplicar bordes
-    $range = 'A6:F' . ($row - 1);
-
-// Establecer bordes para la tabla
-    $styleArray = [
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                'color' => ['argb' => 'FF000000'],
-            ],
-        ],
-    ];
-    $sheet->getStyle($range)->applyFromArray($styleArray);
-
-
-    // Llenar el resto de las filas con los datos de los pedidos
-    $row = 8; // Empezar desde la quinta fila
-    while ($pedido = $result->fetch_assoc()) {
-        $sheet->setCellValue('A' . $row, $pedido['id']);
-        $sheet->setCellValue('B' . $row, $pedido['nombre_apellidos']);
-        $sheet->setCellValue('C' . $row, $pedido['fecha_pedido']);
-        $sheet->setCellValue('D' . $row, $pedido['estado']);
-        $sheet->setCellValue('E' . $row, $pedido['detalles']);
-        $sheet->setCellValue('F' . $row, $pedido['descripcion_pedido']);
-        $row++;
-    }
-
-// Formatear la fecha de inicio y fin para incluirlas en el nombre del archivo
-    $fecha_inicio_formateada = date('Y-m-d', strtotime($fecha_inicio));
-    $fecha_fin_formateada = date('Y-m-d', strtotime($fecha_fin));
-
-// Formatear la hora de inicio y fin para incluirlas en el nombre del archivo
-    $hora_inicio_formateada = date('H-i-s', strtotime($hora_inicio));
-    $hora_fin_formateada = date('H-i-s', strtotime($hora_fin));
-
-// Eliminar espacios y caracteres no permitidos en el nombre del estado
-    $estado_cleaned = preg_replace("/[^A-Za-z0-9 ]/", '', $estado);
-
-// Nombre del archivo Excel
-    $filename = 'reporte_pedidos_' .  str_replace(' ', '_', $estado_cleaned) . '_' . $fecha_inicio_formateada . '_' . $hora_inicio_formateada . '_al_' . $fecha_fin_formateada . '_' . $hora_fin_formateada . '.xlsx';
-
-
-    // Guardar el archivo Excel
-    $writer = new Xlsx($spreadsheet);
-    $writer->save($filename);
-
-    // Configurar encabezado HTTP para descargar el archivo XLSX
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-    readfile($filename); // Leer y enviar el archivo al cliente
-    exit();
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Generar Reporte de Pedidos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Panel de Control</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="img/icon.png">
     <style>
         body {
-            background-image: url('img/pollo.png');
+            background-image: url('img/pollo.png'); /* Ruta del Archivo */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            height: 88vh;
-            font-family: Arial, sans-serif;
+            height: 88vh; /* Ajusta la altura según tus necesidades */
         }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
+        .panel-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
             background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        label {
-            font-weight: bold;
-        }
-        input[type="date"],
-        input[type="time"],
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #dee2e6;
             border-radius: 5px;
-            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
+        .panel-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .panel-links {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .panel-links a {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px 15px;
             background-color: #007bff;
             color: #fff;
-            border: none;
+            text-decoration: none;
             border-radius: 5px;
-            cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        input[type="submit"]:hover {
+        .panel-links a:hover {
             background-color: #0056b3;
         }
-        a {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #007bff;
-            text-decoration: none;
+        .user-icon {
+            position: absolute;
+            top: 20px;
+            right: 60px;
+            cursor: pointer;
+            width: 40px; /* Ancho deseado */
+            height: auto; /* Altura automática para mantener la proporción */
         }
-        a:hover {
-            text-decoration: underline;
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .logout-collapse {
+            position: absolute;
+            top: 70px;
+            right: 20px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Generar Reporte de Pedidos</h2>
-    <form method="post">
-        <label for="fecha_inicio">Fecha Inicio:</label>
-        <input type="date" name="fecha_inicio" id="fecha_inicio" required><br>
-        <label for="hora_inicio">Hora Inicio:</label>
-        <input type="time" name="hora_inicio" id="hora_inicio" required><br>
-        <label for="fecha_fin">Fecha Fin:</label>
-        <input type="date" name="fecha_fin" id="fecha_fin" required><br>
-        <label for="hora_fin">Hora Fin:</label>
-        <input type="time" name="hora_fin" id="hora_fin" required><br>
-        <label for="estado">Estado:</label>
-        <select name="estado" id="estado" required>
-            <option value="pendiente">Pendiente</option>
-            <option value="aprobado">Aprobado</option>
-            <option value="en camino">En camino</option>
-            <option value="entregado">Entregado</option>
-        </select><br>
-        <input type="submit" value="Generar Reporte">
-    </form>
-    <a href="panel.php">Volver al Panel</a>
-    <?php if(isset($error)) echo "<p class='error'>$error</p>"; ?>
+<div class="container mt-5">
+    <div class="panel-container">
+        <h2 class="panel-title">Gestion de Reportes</h2>
+        <ul class="panel-links">
+            <li><a href="reportes_pedidos.php">Reportes de Pedidos</a></li>
+            <li><a href="reportes_productos.php">Reportes de Productos</a></li>
+        </ul>
+        <a href="panel.php" class="btn">Volver al Panel</a>
+    </div>
+
 </div>
+<!-- Imagen de usuario -->
+<img src="img/user.png" alt="Usuario" class="user-icon" data-bs-toggle="collapse" href="#logoutCollapse" aria-expanded="false" aria-controls="logoutCollapse">
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

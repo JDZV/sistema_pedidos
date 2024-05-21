@@ -1,3 +1,5 @@
 -- Instalar composer desde su web https://getcomposer.org/download/
 -- Instalar la libreria para los reportes en excel
 composer require phpoffice/phpspreadsheet
+php 7.0
+Cargar el backup que s eencuentra en la carpeta BD para crear la base de datos
