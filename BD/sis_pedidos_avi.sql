@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 19-05-2024 a las 10:57:06
+-- Tiempo de generación: 28-05-2024 a las 05:27:31
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -45,7 +45,9 @@ INSERT INTO `detalles_pedido` (`id`, `pedido_id`, `producto_id`, `cantidad`, `de
 (1, 4, 1, 2, 'Pollo y pato descargado', '2024-05-19 01:29:58', '2024-05-19 01:29:58'),
 (2, 4, 2, 3, 'Pollo y pato descargado', '2024-05-19 01:29:58', '2024-05-19 01:29:58'),
 (3, 5, 1, 2, 'pato con menundencias', '2024-05-19 02:02:43', '2024-05-19 02:02:43'),
-(4, 6, 2, 1, 'Pollos cargados', '2024-05-19 07:56:12', '2024-05-19 07:56:12');
+(4, 6, 2, 1, 'Pollos cargados', '2024-05-19 07:56:12', '2024-05-19 07:56:12'),
+(5, 7, 1, 1, 'pollo y patos', '2024-05-21 06:37:29', '2024-05-21 06:37:29'),
+(6, 7, 2, 2, 'pollo y patos', '2024-05-21 06:37:29', '2024-05-21 06:37:29');
 
 -- --------------------------------------------------------
 
@@ -67,9 +69,10 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha_pedido`, `estado`, `date_created`, `date_modified`) VALUES
-(4, 2, '2024-05-20 05:00:00', 'pendiente', '2024-05-19 01:29:58', '2024-05-19 01:47:13'),
-(5, 2, '2024-05-21 18:30:00', 'cancelado', '2024-05-19 02:02:43', '2024-05-19 02:05:15'),
-(6, 2, '2024-05-22 15:30:00', 'pendiente', '2024-05-19 07:56:12', '2024-05-19 07:56:12');
+(4, 2, '2024-05-20 05:00:00', 'entregado', '2024-05-19 01:29:58', '2024-05-21 06:40:32'),
+(5, 2, '2024-05-21 18:30:00', 'pendiente', '2024-05-19 02:02:43', '2024-05-20 20:40:25'),
+(6, 2, '2024-05-22 15:30:00', 'pendiente', '2024-05-19 07:56:12', '2024-05-20 20:40:27'),
+(7, 2, '2024-05-22 23:40:00', 'pendiente', '2024-05-21 06:37:29', '2024-05-21 06:37:29');
 
 -- --------------------------------------------------------
 
@@ -92,8 +95,9 @@ CREATE TABLE `productos` (
 --
 
 INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `precio`, `stock`, `date_created`, `date_modified`) VALUES
-(1, 'Patos', 'Patos recien llegados', 10.00, 11, '2024-05-19 01:02:51', '2024-05-19 02:08:31'),
-(2, 'Pollos', 'recien llegadas de la granja San Jose', 5.00, 15, '2024-05-19 01:02:51', '2024-05-19 01:02:51');
+(1, 'Patos', 'Patos recien llegados', 10.00, 28, '2024-05-19 01:02:51', '2024-05-21 06:40:32'),
+(2, 'Pollos', 'recien llegadas de la granja San Jose', 5.00, 37, '2024-05-19 01:02:51', '2024-05-21 06:40:32'),
+(3, 'Pavo', 'Pavos recien llegados', 10.00, 0, '2024-05-21 07:30:31', '2024-05-21 07:30:31');
 
 -- --------------------------------------------------------
 
@@ -190,19 +194,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `detalles_pedido`
 --
 ALTER TABLE `detalles_pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
