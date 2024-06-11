@@ -15,7 +15,7 @@ $sql = "SELECT p.id, p.fecha_pedido, p.estado, dp.descripcion_pedido AS descripc
         FROM pedidos p 
         LEFT JOIN detalles_pedido dp ON p.id = dp.pedido_id 
         LEFT JOIN productos pr ON dp.producto_id = pr.id
-        WHERE p.usuario_id = '$usuario_id' AND p.estado != 'cancelado'
+        WHERE p.usuario_id = '$usuario_id' AND p.estado != 'cancelado' AND p.estado != 'entregado'
         GROUP BY p.id";
 $result = $conn->query($sql);
 
@@ -115,6 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cancelar_pedido'])) {
     <h2>Mis Pedidos</h2>
     <div class="action-buttons">
         <a href="crear_pedido.php" class="btn">Crear Pedido</a>
+        <a href="pedidos_entregados.php" class="btn">Pedidos Entregados</a> <!-- Nuevo botón -->
         <a href="pedidos_cancelados.php" class="btn">Pedidos Cancelados</a>
     </div>
     <table>
